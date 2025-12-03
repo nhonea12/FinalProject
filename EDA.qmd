@@ -1,0 +1,26 @@
+---
+title: "ST 558 Final Project - EDA"
+author: "Nathan Honea"
+format: html
+editor_options: 
+  chunk_output_type: console
+---
+
+## Introduction 
+
+
+## Data
+
+```{r}
+library(tidyverse)
+
+diabetes_data <- read_csv("diabetes_binary_health_indicators_BRFSS2015.csv")
+
+diabetes_data
+```
+
+## Summarizations
+
+```{r}
+
+```

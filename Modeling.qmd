@@ -1,0 +1,30 @@
+---
+title: "ST 558 Final Project - Modeling"
+author: "Nathan Honea"
+format: html
+editor_options: 
+  chunk_output_type: console
+---
+
+## Classification Trees
+
+
+```{r}
+
+```
+
+## Random Forest Model
+
+
+```{r}
+
+```
+
+## Final Model Selection
+
+
+```{r}
+
+```
+
+
