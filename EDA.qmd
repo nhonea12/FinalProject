@@ -91,13 +91,90 @@ levels(diabetes_data$Income) <- list("< $10,000" = "1", "$10,000-$15,000" = "2",
 # reexamine the data after changing variables to factors and renaming the levels of the factors
 diabetes_data
 str(diabetes_data)
+
+# check for missing values
+colSums(is.na(diabetes_data))
 ```
+
+Our variables have been converted to factors with appropriate level names, and our date has no missing values! We are ready to to conduct exploratory data analysis on our data through numeric summaries, tables, and visualizations.
 
 ## Summarizations
 
 ```{r}
-
+# two-way contingency table of whether someone has diabetes/prediabetes and whether they have high blood pressure
+table(diabetes_data$Diabetes_binary, diabetes_data$HighBP)
 ```
+
+It appears that those with high blood pressure are more likely to have diabetes or prediabetes than those who do not.
+
+```{r}
+# two-way contingency table of whether someone has diabetes/prediabetes and whether they have high cholesterol
+table(diabetes_data$Diabetes_binary, diabetes_data$HighChol)
+```
+
+It appears that those with high cholesterol are more likely to have diabetes or prediabetes than those who do not.
+
+```{r}
+# two-way contingency table of whether someone has diabetes/prediabetes and whether they are a smoker
+table(diabetes_data$Diabetes_binary, diabetes_data$Smoker)
+```
+
+It appears that those who are or were smokers are more likely to have diabetes or prediabetes than those who are/were not.
+
+```{r}
+# two-way contingency table of whether someone has diabetes/prediabetes and whether regularly eat vegetables
+table(diabetes_data$Diabetes_binary, diabetes_data$Veggies)
+
+# proportion of non-veggie eaters with diabetes
+8610/(8610+39229)
+
+# proportion of veggie eaters with diabetes
+26736/(26736+179105)
+```
+
+It appears that those who regularly eat vegetables are less likely to have diabetes or prediabetes than those who do not.
+
+```{r}
+# two-way contingency table of whether someone has diabetes/prediabetes and whether they have had heart disease/attack
+table(diabetes_data$Diabetes_binary, diabetes_data$HeartDiseaseorAttack)
+```
+
+It appears that those who have had heart disease or a heart attack are much more likely to have diabetes or prediabetes than those who do not.
+
+```{r}
+# two-way contingency table of whether someone has diabetes/prediabetes and whether they have high cholesterol
+table(diabetes_data$Diabetes_binary, diabetes_data$HvyAlcoholConsump)
+
+# proportion of non-heavy drinkers with diabetes
+34514/(34514+204910)
+
+# proportion of heavy drinkers with diabetes
+832/(832+13424)
+```
+
+It appears that heavy drinkers are actually less likely to have diabetes or prediabetes than those who are not heavy drinkers. 
+
+
+```{r}
+# two-way contingency table of whether someone has diabetes/prediabetes and whether they have been physically active in the last 30 days
+table(diabetes_data$Diabetes_binary, diabetes_data$PhysActivity)
+```
+
+It appears that those who have not exercised in the last 30 days are more likely to have diabetes or prediabetes than those who have.
+
+```{r}
+# two-way contingency table of whether someone has diabetes/prediabetes and their self-reported general health level
+table(diabetes_data$Diabetes_binary, diabetes_data$GenHlth)
+```
+
+The most common response respondents gave for their general health was 'Very Good', followed by 'Good'. It appears that the better someone reports their general health, the less likely they are to have diabetes. This makes sense, considering having diabetes/prediabetes would adversely affect your general health.
+
+```{r}
+# two-way contingency table of whether someone has diabetes/prediabetes and their household income
+table(diabetes_data$Diabetes_binary, diabetes_data$Income)
+```
+
+It generally appears that those with a higher household income are less likely to have diabetes or prediabetes, with over ten times as many non-diabetics in the uppermost income level compared to the lowermost, but only about three times as many diabetics/prediabetics.
 
 
 [Click here for the Modeling Page](Modeling.html)
