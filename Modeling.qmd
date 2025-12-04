@@ -6,15 +6,31 @@ editor_options:
   chunk_output_type: console
 ---
 
+## Introduction 
+
+With our exploratory data analysis complete, we can now model our data. 
+
+As a recap, our data is on diabetes in the United States, with our data set including over 250,000 individuals. Our response is whether each individual has diabetes (or prediabetes) or not. We have 21 predictor variables, most of them being binary or some other form of categorical variable. These include whether in the individual has high blood pressure, has high cholesterol, the individual's self-reported general health level, the individual income level, and more. There are also some numeric predictor variables, including individuals' BMI, and their number of poor mental and physical health days in the last 30 days. 
+
+Since our response variable is binary (whether or not an individual has diabetes/prediabetes), we will be using classification modelsto try to predict whether individuals have have diabetes based on our predictor variables. Specifically we will use **classification trees** and **random forest** models. Both will involve splitting the data into a training and test set and using five-fold cross validation. We will determine the best model by using **log-loss** as our metric. We will create these models using the `tidymodels` package. 
+
 ## Classification Trees
 
+A classification tree is a type of model used to predict a categorical response variable. They are done by splitting the prediction space up into regions, within each region a prediction will be made (in this: No diabetes or diabetes). We start by splitting the data into a training and test set, with our model being trained on the training set, and our test set being used to test how it performs on new data. We will use a 70/30 train/test split here. Within our training set, we will use five-fold cross validation, where our training data is split into five sections, and over five iterations each is used as testing data once, so we can compare models within our training data. Our classification tree will break up into regions based on our chosen predictor variables, and after splitting into regions, it will predict whether our response variable falls into 'No Diabetes' or 'Prediabetes/Diabetes' based on what is the most common response in that region. This will be done within the framework of `tidymodels`, meaning we will create our models with a recipe and model engine to then create our workflow.
 
 ```{r}
+library(tidyverse)
+library(tidymodels)
+
+# read in data on diabetes
+diabetes_data <- read_csv("diabetes_binary_health_indicators_BRFSS2015.csv")
+
 
 ```
 
 ## Random Forest Model
 
+The random forest model is another form of a tree model, as we will once again be splitting our data into regions, and classifying our response based on those regions. However, unlike a normal classification tree, the random forest uses bootstrapping to get multiple samples fit and average across multiple trees, thus reducing the variance. While this is also done in a bagged tree model, random forests differ from normal bagged tree models by not including every predictor in every level of splitting, only a random subset of the predictors, so that if their is a strong predictor that is always used early in the splitting of a tree under normal bagging circumstance, under bagging it will not always be used first, reducing the correlation between our trees, thus reducing our variance. So with bagging, one or two predictors won't dominate all of our trees we are averaging over.
 
 ```{r}
 
