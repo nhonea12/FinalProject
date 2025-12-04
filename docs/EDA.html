@@ -144,6 +144,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>The following data set contains over 250,000 survey from Americans, with the target variable measuring whether the respondent has diabetes of prediabetes (stored in <code>Diabetes_binary</code>).</p>
+<p>There are 21 other variables that can be used to predict which individuals have diabetes/prediabetes. Among these are whether the individual has high blood pressure, and whether the individual has high cholesterol. Other possibly relevant health related variables are whether the individual has had a heart attack or has/had heart disease, whether the individual is a heavy drinker, whether the individual eats fruits and vegetables, whether the individual has been physically active in the last 30 days, whether the individual is/was a smoker, and the individual’s BMI. The individuals’ general health was also measured by asking them their general health on a five-level scale from “poor” to “excellent”. The individuals’ sex and age (age being grouped into age brackets) were also collected. The individual’s household income bracket was also recorded.</p>
 </section>
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
@@ -161,7 +163,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 ✖ dplyr::lag()    masks stats::lag()
 ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>diabetes_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"diabetes_binary_health_indicators_BRFSS2015.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># read in data on diabetes</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>diabetes_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"diabetes_binary_health_indicators_BRFSS2015.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Rows: 253680 Columns: 22
 ── Column specification ────────────────────────────────────────────────────────
@@ -171,7 +174,8 @@ dbl (22): Diabetes_binary, HighBP, HighChol, CholCheck, BMI, Smoker, Stroke,...
 ℹ Use `spec()` to retrieve the full column specification for this data.
 ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>diabetes_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># view the data and its structure after initially reading in</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>diabetes_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 253,680 × 22
    Diabetes_binary HighBP HighChol CholCheck   BMI Smoker Stroke
@@ -191,6 +195,170 @@ dbl (22): Diabetes_binary, HighBP, HighChol, CholCheck, BMI, Smoker, Stroke,...
 #   Fruits &lt;dbl&gt;, Veggies &lt;dbl&gt;, HvyAlcoholConsump &lt;dbl&gt;, AnyHealthcare &lt;dbl&gt;,
 #   NoDocbcCost &lt;dbl&gt;, GenHlth &lt;dbl&gt;, MentHlth &lt;dbl&gt;, PhysHlth &lt;dbl&gt;,
 #   DiffWalk &lt;dbl&gt;, Sex &lt;dbl&gt;, Age &lt;dbl&gt;, Education &lt;dbl&gt;, Income &lt;dbl&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(diabetes_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>spc_tbl_ [253,680 × 22] (S3: spec_tbl_df/tbl_df/tbl/data.frame)
+ $ Diabetes_binary     : num [1:253680] 0 0 0 0 0 0 0 0 1 0 ...
+ $ HighBP              : num [1:253680] 1 0 1 1 1 1 1 1 1 0 ...
+ $ HighChol            : num [1:253680] 1 0 1 0 1 1 0 1 1 0 ...
+ $ CholCheck           : num [1:253680] 1 0 1 1 1 1 1 1 1 1 ...
+ $ BMI                 : num [1:253680] 40 25 28 27 24 25 30 25 30 24 ...
+ $ Smoker              : num [1:253680] 1 1 0 0 0 1 1 1 1 0 ...
+ $ Stroke              : num [1:253680] 0 0 0 0 0 0 0 0 0 0 ...
+ $ HeartDiseaseorAttack: num [1:253680] 0 0 0 0 0 0 0 0 1 0 ...
+ $ PhysActivity        : num [1:253680] 0 1 0 1 1 1 0 1 0 0 ...
+ $ Fruits              : num [1:253680] 0 0 1 1 1 1 0 0 1 0 ...
+ $ Veggies             : num [1:253680] 1 0 0 1 1 1 0 1 1 1 ...
+ $ HvyAlcoholConsump   : num [1:253680] 0 0 0 0 0 0 0 0 0 0 ...
+ $ AnyHealthcare       : num [1:253680] 1 0 1 1 1 1 1 1 1 1 ...
+ $ NoDocbcCost         : num [1:253680] 0 1 1 0 0 0 0 0 0 0 ...
+ $ GenHlth             : num [1:253680] 5 3 5 2 2 2 3 3 5 2 ...
+ $ MentHlth            : num [1:253680] 18 0 30 0 3 0 0 0 30 0 ...
+ $ PhysHlth            : num [1:253680] 15 0 30 0 0 2 14 0 30 0 ...
+ $ DiffWalk            : num [1:253680] 1 0 1 0 0 0 0 1 1 0 ...
+ $ Sex                 : num [1:253680] 0 0 0 0 0 1 0 0 0 1 ...
+ $ Age                 : num [1:253680] 9 7 9 11 11 10 9 11 9 8 ...
+ $ Education           : num [1:253680] 4 6 4 3 5 6 6 4 5 4 ...
+ $ Income              : num [1:253680] 3 1 8 6 4 8 7 4 1 3 ...
+ - attr(*, "spec")=
+  .. cols(
+  ..   Diabetes_binary = col_double(),
+  ..   HighBP = col_double(),
+  ..   HighChol = col_double(),
+  ..   CholCheck = col_double(),
+  ..   BMI = col_double(),
+  ..   Smoker = col_double(),
+  ..   Stroke = col_double(),
+  ..   HeartDiseaseorAttack = col_double(),
+  ..   PhysActivity = col_double(),
+  ..   Fruits = col_double(),
+  ..   Veggies = col_double(),
+  ..   HvyAlcoholConsump = col_double(),
+  ..   AnyHealthcare = col_double(),
+  ..   NoDocbcCost = col_double(),
+  ..   GenHlth = col_double(),
+  ..   MentHlth = col_double(),
+  ..   PhysHlth = col_double(),
+  ..   DiffWalk = col_double(),
+  ..   Sex = col_double(),
+  ..   Age = col_double(),
+  ..   Education = col_double(),
+  ..   Income = col_double()
+  .. )
+ - attr(*, "problems")=&lt;externalptr&gt; </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># convert columns with binary variables to factors and change the names of values</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>diabetes_data <span class="ot">&lt;-</span> diabetes_data <span class="sc">|&gt;</span> </span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Diabetes_binary =</span> <span class="fu">as.factor</span>(Diabetes_binary), </span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">HighBP =</span> <span class="fu">as.factor</span>(HighBP), </span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">HighChol =</span> <span class="fu">as.factor</span>(HighChol), </span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">CholCheck =</span> <span class="fu">as.factor</span>(CholCheck), </span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">Smoker =</span> <span class="fu">as.factor</span>(Smoker), </span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">Stroke =</span> <span class="fu">as.factor</span>(Stroke), </span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">HeartDiseaseorAttack =</span> <span class="fu">as.factor</span>(HeartDiseaseorAttack), </span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">PhysActivity =</span> <span class="fu">as.factor</span>(PhysActivity), </span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">Fruits =</span> <span class="fu">as.factor</span>(Fruits), </span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">Veggies =</span> <span class="fu">as.factor</span>(Veggies), </span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">HvyAlcoholConsump =</span> <span class="fu">as.factor</span>(HvyAlcoholConsump), </span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">AnyHealthcare =</span> <span class="fu">as.factor</span>(AnyHealthcare), </span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">NoDocbcCost =</span> <span class="fu">as.factor</span>(NoDocbcCost), </span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">GenHlth =</span> <span class="fu">as.factor</span>(GenHlth), </span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">DiffWalk =</span> <span class="fu">as.factor</span>(DiffWalk), </span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">Sex =</span> <span class="fu">as.factor</span>(Sex), </span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">Age =</span> <span class="fu">as.factor</span>(Age), </span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">Education =</span> <span class="fu">as.factor</span>(Education), </span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">Income =</span> <span class="fu">as.factor</span>(Income)</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="co"># change level names of factors</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(diabetes_data<span class="sc">$</span>Diabetes_binary) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"No Diabetes"</span> <span class="ot">=</span> <span class="st">"0"</span>, <span class="st">"Prediabetes/Diabetes"</span> <span class="ot">=</span> <span class="st">"1"</span>)</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(diabetes_data<span class="sc">$</span>HighBP) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"No High Blood Pressue"</span> <span class="ot">=</span> <span class="st">"0"</span>, <span class="st">"High Blood Pressure"</span> <span class="ot">=</span> <span class="st">"1"</span>)</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(diabetes_data<span class="sc">$</span>HighChol) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"No High Cholesterol"</span> <span class="ot">=</span> <span class="st">"0"</span>, <span class="st">"High Cholesterol"</span> <span class="ot">=</span> <span class="st">"1"</span>)</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(diabetes_data<span class="sc">$</span>CholCheck) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"No Chol. check in last 5 years"</span> <span class="ot">=</span> <span class="st">"0"</span>, <span class="st">"Chol. check in last 5 years"</span> <span class="ot">=</span> <span class="st">"1"</span>)</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(diabetes_data<span class="sc">$</span>Smoker) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"Non-Smoker"</span> <span class="ot">=</span> <span class="st">"0"</span>, <span class="st">"Smoker"</span> <span class="ot">=</span> <span class="st">"1"</span>)</span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(diabetes_data<span class="sc">$</span>Stroke) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"Never had strok"</span> <span class="ot">=</span> <span class="st">"0"</span>, <span class="st">"Had stroke"</span> <span class="ot">=</span> <span class="st">"1"</span>)</span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(diabetes_data<span class="sc">$</span>HeartDiseaseorAttack) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"Never had heart disease/attack"</span> <span class="ot">=</span> <span class="st">"0"</span>, <span class="st">"Had heart disease/attack"</span> <span class="ot">=</span> <span class="st">"1"</span>)</span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(diabetes_data<span class="sc">$</span>PhysActivity) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"No physical activity in last 30 days"</span> <span class="ot">=</span> <span class="st">"0"</span>, <span class="st">"Physical activity in last 30 days"</span> <span class="ot">=</span> <span class="st">"1"</span>)</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(diabetes_data<span class="sc">$</span>Fruits) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"Doesn't eat fruit"</span> <span class="ot">=</span> <span class="st">"0"</span>, <span class="st">"Eats fruit"</span> <span class="ot">=</span> <span class="st">"1"</span>)</span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(diabetes_data<span class="sc">$</span>Veggies) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"Doesn't eat veggies"</span> <span class="ot">=</span> <span class="st">"0"</span>, <span class="st">"Eats veggies"</span> <span class="ot">=</span> <span class="st">"1"</span>)</span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(diabetes_data<span class="sc">$</span>HvyAlcoholConsump) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"Not heavy drinker"</span> <span class="ot">=</span> <span class="st">"0"</span>, <span class="st">"Heavy drinker"</span> <span class="ot">=</span> <span class="st">"1"</span>)</span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(diabetes_data<span class="sc">$</span>AnyHealthcare) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"No healthcare"</span> <span class="ot">=</span> <span class="st">"0"</span>, <span class="st">"Healthcare"</span> <span class="ot">=</span> <span class="st">"1"</span>)</span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(diabetes_data<span class="sc">$</span>NoDocbcCost) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"Can't afford doctor"</span> <span class="ot">=</span> <span class="st">"0"</span>, <span class="st">"Can afford doctor"</span> <span class="ot">=</span> <span class="st">"1"</span>)</span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(diabetes_data<span class="sc">$</span>GenHlth) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"Excellent"</span> <span class="ot">=</span> <span class="st">"1"</span>, <span class="st">"Very Good"</span> <span class="ot">=</span> <span class="st">"2"</span>, <span class="st">"Good"</span> <span class="ot">=</span> <span class="st">"3"</span>, <span class="st">"Fair"</span> <span class="ot">=</span> <span class="st">"4"</span>, <span class="st">"Poor"</span> <span class="ot">=</span> <span class="st">"5"</span>)</span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(diabetes_data<span class="sc">$</span>DiffWalk) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"No difficulty walking"</span> <span class="ot">=</span> <span class="st">"0"</span>, <span class="st">"Difficulty walking"</span> <span class="ot">=</span> <span class="st">"1"</span>)</span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(diabetes_data<span class="sc">$</span>Sex) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"Female"</span> <span class="ot">=</span> <span class="st">"0"</span>, <span class="st">"Male"</span> <span class="ot">=</span> <span class="st">"1"</span>)</span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(diabetes_data<span class="sc">$</span>Age) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"18-24"</span> <span class="ot">=</span> <span class="st">"1"</span>, <span class="st">"25-29"</span> <span class="ot">=</span> <span class="st">"2"</span>, <span class="st">"30-34"</span> <span class="ot">=</span> <span class="st">"3"</span>, <span class="st">"35-39"</span> <span class="ot">=</span> <span class="st">"4"</span>, <span class="st">"40-44"</span> <span class="ot">=</span> <span class="st">"5"</span>, <span class="st">"45-49"</span> <span class="ot">=</span> <span class="st">"6"</span>, <span class="st">"50-54"</span> <span class="ot">=</span> <span class="st">"7"</span>, <span class="st">"55-59"</span> <span class="ot">=</span> <span class="st">"8"</span>, <span class="st">"60-64"</span> <span class="ot">=</span> <span class="st">"9"</span>, <span class="st">"65-69"</span> <span class="ot">=</span> <span class="st">"10"</span>, <span class="st">"70-74"</span> <span class="ot">=</span> <span class="st">"11"</span>, <span class="st">"75-79"</span> <span class="ot">=</span> <span class="st">"12"</span>, <span class="st">"80+"</span> <span class="ot">=</span> <span class="st">"13"</span>)</span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(diabetes_data<span class="sc">$</span>Education) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"No school/kindergarten"</span> <span class="ot">=</span> <span class="st">"1"</span>, <span class="st">"Elementary"</span> <span class="ot">=</span> <span class="st">"2"</span>, <span class="st">"Some high school"</span> <span class="ot">=</span> <span class="st">"3"</span>, <span class="st">"High school graduate"</span> <span class="ot">=</span> <span class="st">"4"</span>, <span class="st">"Some college"</span> <span class="ot">=</span> <span class="st">"5"</span>, <span class="st">"College graduate"</span> <span class="ot">=</span> <span class="st">"6"</span>)</span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(diabetes_data<span class="sc">$</span>Income) <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"&lt; $10,000"</span> <span class="ot">=</span> <span class="st">"1"</span>, <span class="st">"$10,000-$15,000"</span> <span class="ot">=</span> <span class="st">"2"</span>, <span class="st">"$15,000-$20,000"</span> <span class="ot">=</span> <span class="st">"3"</span>, <span class="st">"$20,000-$25,000"</span> <span class="ot">=</span> <span class="st">"4"</span>, <span class="st">"$25,000-$35,000"</span> <span class="ot">=</span> <span class="st">"5"</span>, <span class="st">"$35,000-$50,000"</span> <span class="ot">=</span> <span class="st">"6"</span>, <span class="st">"$50,000-$75,000"</span> <span class="ot">=</span> <span class="st">"7"</span>, <span class="st">"$75,000+"</span> <span class="ot">=</span> <span class="st">"8"</span>)</span>
+<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a><span class="co"># reexamine the data after changing variables to factors and renaming the levels of the factors</span></span>
+<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a>diabetes_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 253,680 × 22
+   Diabetes_binary      HighBP            HighChol CholCheck   BMI Smoker Stroke
+   &lt;fct&gt;                &lt;fct&gt;             &lt;fct&gt;    &lt;fct&gt;     &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt; 
+ 1 No Diabetes          High Blood Press… High Ch… Chol. ch…    40 Smoker Never…
+ 2 No Diabetes          No High Blood Pr… No High… No Chol.…    25 Smoker Never…
+ 3 No Diabetes          High Blood Press… High Ch… Chol. ch…    28 Non-S… Never…
+ 4 No Diabetes          High Blood Press… No High… Chol. ch…    27 Non-S… Never…
+ 5 No Diabetes          High Blood Press… High Ch… Chol. ch…    24 Non-S… Never…
+ 6 No Diabetes          High Blood Press… High Ch… Chol. ch…    25 Smoker Never…
+ 7 No Diabetes          High Blood Press… No High… Chol. ch…    30 Smoker Never…
+ 8 No Diabetes          High Blood Press… High Ch… Chol. ch…    25 Smoker Never…
+ 9 Prediabetes/Diabetes High Blood Press… High Ch… Chol. ch…    30 Smoker Never…
+10 No Diabetes          No High Blood Pr… No High… Chol. ch…    24 Non-S… Never…
+# ℹ 253,670 more rows
+# ℹ 15 more variables: HeartDiseaseorAttack &lt;fct&gt;, PhysActivity &lt;fct&gt;,
+#   Fruits &lt;fct&gt;, Veggies &lt;fct&gt;, HvyAlcoholConsump &lt;fct&gt;, AnyHealthcare &lt;fct&gt;,
+#   NoDocbcCost &lt;fct&gt;, GenHlth &lt;fct&gt;, MentHlth &lt;dbl&gt;, PhysHlth &lt;dbl&gt;,
+#   DiffWalk &lt;fct&gt;, Sex &lt;fct&gt;, Age &lt;fct&gt;, Education &lt;fct&gt;, Income &lt;fct&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(diabetes_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>tibble [253,680 × 22] (S3: tbl_df/tbl/data.frame)
+ $ Diabetes_binary     : Factor w/ 2 levels "No Diabetes",..: 1 1 1 1 1 1 1 1 2 1 ...
+ $ HighBP              : Factor w/ 2 levels "No High Blood Pressue",..: 2 1 2 2 2 2 2 2 2 1 ...
+ $ HighChol            : Factor w/ 2 levels "No High Cholesterol",..: 2 1 2 1 2 2 1 2 2 1 ...
+ $ CholCheck           : Factor w/ 2 levels "No Chol. check in last 5 years",..: 2 1 2 2 2 2 2 2 2 2 ...
+ $ BMI                 : num [1:253680] 40 25 28 27 24 25 30 25 30 24 ...
+ $ Smoker              : Factor w/ 2 levels "Non-Smoker","Smoker": 2 2 1 1 1 2 2 2 2 1 ...
+ $ Stroke              : Factor w/ 2 levels "Never had strok",..: 1 1 1 1 1 1 1 1 1 1 ...
+ $ HeartDiseaseorAttack: Factor w/ 2 levels "Never had heart disease/attack",..: 1 1 1 1 1 1 1 1 2 1 ...
+ $ PhysActivity        : Factor w/ 2 levels "No physical activity in last 30 days",..: 1 2 1 2 2 2 1 2 1 1 ...
+ $ Fruits              : Factor w/ 2 levels "Doesn't eat fruit",..: 1 1 2 2 2 2 1 1 2 1 ...
+ $ Veggies             : Factor w/ 2 levels "Doesn't eat veggies",..: 2 1 1 2 2 2 1 2 2 2 ...
+ $ HvyAlcoholConsump   : Factor w/ 2 levels "Not heavy drinker",..: 1 1 1 1 1 1 1 1 1 1 ...
+ $ AnyHealthcare       : Factor w/ 2 levels "No healthcare",..: 2 1 2 2 2 2 2 2 2 2 ...
+ $ NoDocbcCost         : Factor w/ 2 levels "Can't afford doctor",..: 1 2 2 1 1 1 1 1 1 1 ...
+ $ GenHlth             : Factor w/ 5 levels "Excellent","Very Good",..: 5 3 5 2 2 2 3 3 5 2 ...
+ $ MentHlth            : num [1:253680] 18 0 30 0 3 0 0 0 30 0 ...
+ $ PhysHlth            : num [1:253680] 15 0 30 0 0 2 14 0 30 0 ...
+ $ DiffWalk            : Factor w/ 2 levels "No difficulty walking",..: 2 1 2 1 1 1 1 2 2 1 ...
+ $ Sex                 : Factor w/ 2 levels "Female","Male": 1 1 1 1 1 2 1 1 1 2 ...
+ $ Age                 : Factor w/ 13 levels "18-24","25-29",..: 9 7 9 11 11 10 9 11 9 8 ...
+ $ Education           : Factor w/ 6 levels "No school/kindergarten",..: 4 6 4 3 5 6 6 4 5 4 ...
+ $ Income              : Factor w/ 8 levels "&lt; $10,000","$10,000-$15,000",..: 3 1 8 6 4 8 7 4 1 3 ...</code></pre>
 </div>
 </div>
 </section>
