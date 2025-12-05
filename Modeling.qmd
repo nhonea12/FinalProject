@@ -4,6 +4,8 @@ author: "Nathan Honea"
 format: html
 editor_options: 
   chunk_output_type: console
+execute: 
+  cache: true
 ---
 
 ## Introduction 
@@ -14,33 +16,258 @@ As a recap, our data is on diabetes in the United States, with our data set incl
 
 Since our response variable is binary (whether or not an individual has diabetes/prediabetes), we will be using classification modelsto try to predict whether individuals have have diabetes based on our predictor variables. Specifically we will use **classification trees** and **random forest** models. Both will involve splitting the data into a training and test set and using five-fold cross validation. We will determine the best model by using **log-loss** as our metric. We will create these models using the `tidymodels` package. 
 
-## Classification Trees
+## Creating Our Recipe
 
-A classification tree is a type of model used to predict a categorical response variable. They are done by splitting the prediction space up into regions, within each region a prediction will be made (in this: No diabetes or diabetes). We start by splitting the data into a training and test set, with our model being trained on the training set, and our test set being used to test how it performs on new data. We will use a 70/30 train/test split here. Within our training set, we will use five-fold cross validation, where our training data is split into five sections, and over five iterations each is used as testing data once, so we can compare models within our training data. Our classification tree will break up into regions based on our chosen predictor variables, and after splitting into regions, it will predict whether our response variable falls into 'No Diabetes' or 'Prediabetes/Diabetes' based on what is the most common response in that region. This will be done within the framework of `tidymodels`, meaning we will create our models with a recipe and model engine to then create our workflow.
+When using `tidymodels`, we must first create our recipe recipe and our workflow. Our recipe includes the predictor variables that will be included in our model. Once we have create our recipes, we can then fit these recipes to different types of models by combining them with a model engine to create our workflows.
 
 ```{r}
 library(tidyverse)
 library(tidymodels)
+library(rpart)
+library(ranger)
+library(baguette)
 
 # read in data on diabetes
 diabetes_data <- read_csv("diabetes_binary_health_indicators_BRFSS2015.csv")
 
+# convert columns with binary variables to factors and change the names of values
+diabetes_data <- diabetes_data |> 
+  mutate(
+    Diabetes_binary = as.factor(Diabetes_binary), 
+    HighBP = as.factor(HighBP), 
+    HighChol = as.factor(HighChol), 
+    CholCheck = as.factor(CholCheck), 
+    Smoker = as.factor(Smoker), 
+    Stroke = as.factor(Stroke), 
+    HeartDiseaseorAttack = as.factor(HeartDiseaseorAttack), 
+    PhysActivity = as.factor(PhysActivity), 
+    Fruits = as.factor(Fruits), 
+    Veggies = as.factor(Veggies), 
+    HvyAlcoholConsump = as.factor(HvyAlcoholConsump), 
+    AnyHealthcare = as.factor(AnyHealthcare), 
+    NoDocbcCost = as.factor(NoDocbcCost), 
+    GenHlth = as.factor(GenHlth), 
+    DiffWalk = as.factor(DiffWalk), 
+    Sex = as.factor(Sex), 
+    Age = as.factor(Age), 
+    Education = as.factor(Education), 
+    Income = as.factor(Income)
+  )
 
+
+# change level names of factors
+levels(diabetes_data$Diabetes_binary) <- list("No Diabetes" = "0", "Prediabetes/Diabetes" = "1")
+
+levels(diabetes_data$HighBP) <- list("No High Blood Pressue" = "0", "High Blood Pressure" = "1")
+
+levels(diabetes_data$HighChol) <- list("No High Cholesterol" = "0", "High Cholesterol" = "1")
+
+levels(diabetes_data$CholCheck) <- list("No Chol. check in last 5 years" = "0", "Chol. check in last 5 years" = "1")
+
+levels(diabetes_data$Smoker) <- list("Non-Smoker" = "0", "Smoker" = "1")
+
+levels(diabetes_data$Stroke) <- list("Never had strok" = "0", "Had stroke" = "1")
+
+levels(diabetes_data$HeartDiseaseorAttack) <- list("Never had heart disease/attack" = "0", "Had heart disease/attack" = "1")
+
+levels(diabetes_data$PhysActivity) <- list("No physical activity in last 30 days" = "0", "Physical activity in last 30 days" = "1")
+
+levels(diabetes_data$Fruits) <- list("Doesn't eat fruit" = "0", "Eats fruit" = "1")
+
+levels(diabetes_data$Veggies) <- list("Doesn't eat veggies" = "0", "Eats veggies" = "1")
+
+levels(diabetes_data$HvyAlcoholConsump) <- list("Not heavy drinker" = "0", "Heavy drinker" = "1")
+
+levels(diabetes_data$AnyHealthcare) <- list("No healthcare" = "0", "Healthcare" = "1")
+
+levels(diabetes_data$NoDocbcCost) <- list("Can't afford doctor" = "0", "Can afford doctor" = "1")
+
+levels(diabetes_data$GenHlth) <- list("Excellent" = "1", "Very Good" = "2", "Good" = "3", "Fair" = "4", "Poor" = "5")
+
+levels(diabetes_data$DiffWalk) <- list("No difficulty walking" = "0", "Difficulty walking" = "1")
+
+levels(diabetes_data$Sex) <- list("Female" = "0", "Male" = "1")
+
+levels(diabetes_data$Age) <- list("18-24" = "1", "25-29" = "2", "30-34" = "3", "35-39" = "4", "40-44" = "5", "45-49" = "6", "50-54" = "7", "55-59" = "8", "60-64" = "9", "65-69" = "10", "70-74" = "11", "75-79" = "12", "80+" = "13")
+
+levels(diabetes_data$Education) <- list("No school/kindergarten" = "1", "Elementary" = "2", "Some high school" = "3", "High school graduate" = "4", "Some college" = "5", "College graduate" = "6")
+
+levels(diabetes_data$Income) <- list("< $10,000" = "1", "$10,000-$15,000" = "2", "$15,000-$20,000" = "3", "$20,000-$25,000" = "4", "$25,000-$35,000" = "5", "$35,000-$50,000" = "6", "$50,000-$75,000" = "7", "$75,000+" = "8")
+
+
+# set seed so the results are replicable
+set.seed(2824)
+
+# split the data into a 70/20 training/test split
+diabetes_split <- initial_split(diabetes_data, prop = 0.70)
+
+# save the 70% split as training
+diabetes_train <- training(diabetes_split)
+
+# save the 30% split as testing
+diabetes_test <- testing(diabetes_split)
+
+# view the training and testing sets
+diabetes_train
+diabetes_test
+
+# want to create a 5 fold CV split on our training data
+diabetes_5_fold_cv <- vfold_cv(diabetes_train, 5)
+
+# view the 5 fold CV
+diabetes_5_fold_cv
 ```
+
+### Setting up the recipe
+
+```{r}
+# create a recipe, including all predictor variables plus some quadratic terms
+recipe <- recipe(Diabetes_binary ~ HighBP + HighChol + Veggies + GenHlth + DiffWalk + AnyHealthcare + BMI, data = diabetes_train) |> 
+  step_dummy(all_factor(), -Diabetes_binary)
+
+recipe 
+
+# view results
+recipe |> 
+  prep(training = diabetes_train) |> 
+  bake(diabetes_train)
+
+# names of variables in the recipe
+recipe  |> 
+  prep(training = diabetes_train) |> 
+  bake(diabetes_train) |> 
+  names()
+```
+
+Our recipe includes high blood pressure, high cholesterol, whether the individual eats vegetables, self-reported general health, difficulty walking, whether the individual has healthcare and BMI as predictor variables. All of the categorical predictors (which is all of them except BMI) were converted into dummy variables. We took in seven predictors, and have 10 predictor variables in our recipe including dummies.
+
+## Classification Trees
+
+A classification tree is a type of model used to predict a categorical response variable. They are done by splitting the prediction space up into regions, within each region a prediction will be made (in this: No diabetes or diabetes). We start by splitting the data into a training and test set, with our model being trained on the training set, and our test set being used to test how it performs on new data. We will use a 70/30 train/test split here. Within our training set, we will use five-fold cross validation, where our training data is split into five sections, and over five iterations each is used as testing data once, so we can compare models within our training data. Our classification tree will break up into regions based on our chosen predictor variables, and after splitting into regions, it will predict whether our response variable falls into 'No Diabetes' or 'Prediabetes/Diabetes' based on what is the most common response in that region. 
+
+```{r}
+# set the engine for our classification tree model
+class_tree_mod <- decision_tree(min_n = 100,
+                          cost_complexity = tune()
+                          ) |>
+  set_engine("rpart") |>
+  set_mode("classification")
+
+# create the workflow for our classification tree
+class_tree_wkf <- workflow() |>
+  add_recipe(recipe) |>
+  add_model(class_tree_mod)
+
+class_tree_wkf
+
+tree_grid <- grid_regular(cost_complexity(),
+                          levels = 10)
+
+# tune our classification tree with 5 fold CV (using default levels)
+class_tree_fits <- class_tree_wkf |> 
+  tune_grid(resamples = diabetes_5_fold_cv,
+            metrics = metric_set(mn_log_loss),
+            grid = tree_grid)
+
+
+class_tree_fits
+
+# view the metrics of our tree with different tunings
+class_tree_fits |> 
+  collect_metrics()
+
+# sort the trees by how they perform in terms of log loss
+class_tree_fits |>
+  collect_metrics() |>
+  filter(.metric == "mn_log_loss") |>
+  arrange(mean)
+
+# select the best tree in terms of log loss
+class_tree_best_params <- select_best(class_tree_fits, metric = "mn_log_loss")
+
+# our best classification tree
+class_tree_best_params
+
+# finalize our workflow and fit our best classification tree to the training data
+class_tree_final_wkf <- class_tree_wkf |>
+  finalize_workflow(class_tree_best_params)
+
+class_tree_final_fit <- class_tree_final_wkf |>
+  last_fit(diabetes_split, metrics = metric_set(mn_log_loss))
+
+class_tree_final_fit
+```
+
+We now have our best classification tree model!
 
 ## Random Forest Model
 
 The random forest model is another form of a tree model, as we will once again be splitting our data into regions, and classifying our response based on those regions. However, unlike a normal classification tree, the random forest uses bootstrapping to get multiple samples fit and average across multiple trees, thus reducing the variance. While this is also done in a bagged tree model, random forests differ from normal bagged tree models by not including every predictor in every level of splitting, only a random subset of the predictors, so that if their is a strong predictor that is always used early in the splitting of a tree under normal bagging circumstance, under bagging it will not always be used first, reducing the correlation between our trees, thus reducing our variance. So with bagging, one or two predictors won't dominate all of our trees we are averaging over.
 
 ```{r}
+# set up our model type and engine for our random forest model, tune on number of parameters to split on
+rf_spec <- rand_forest(mtry = tune()) |>
+  set_engine("ranger") |>
+  set_mode("classification")
 
+# create the workflow for our random forest model
+rf_wkf <- workflow() |>
+  add_recipe(recipe) |>
+  add_model(rf_spec)
+
+# fit our random forest models
+rf_fit <- rf_wkf |>
+  tune_grid(
+    resamples = diabetes_5_fold_cv,
+    grid = 5,
+    metrics = metric_set(mn_log_loss)
+    )
+
+# view which of our random forest models work best based on log loss
+rf_fit |>
+  collect_metrics() |>
+  filter(.metric == "mn_log_loss") |>
+  arrange(mean)
+
+# save our best tuning parameters
+rf_best_params <- select_best(rf_fit, metric = "mn_log_loss")
+rf_best_params
+
+# update the workflow and fit our best random forest model on the training set
+rf_final_wkf <- rf_wkf |>
+ finalize_workflow(rf_best_params)
+
+rf_final_fit <- rf_final_wkf |>
+ last_fit(diabetes_split, metrics = metric_set(mn_log_loss))
+
+rf_final_fit
 ```
+
+We now have our best random forest model! We can now select the best overall model from the best of each of the model types.
 
 ## Final Model Selection
 
-
 ```{r}
+set.seed(2824)
+# compare metrics of each of the final models above
+rbind(
+ # regression tree
+ class_tree_final_fit |> 
+   collect_metrics() |> 
+   mutate(Model = "CLASS TREE", .before = ".metric"),
+ # random forest
+ rf_final_fit |> 
+   collect_metrics() |> 
+   mutate(Model = "RAND FOR", .before = ".metric")
+)
 
+# save the best overall model and workflow
+saveRDS(rf_final_wkf, file = "final_wkf.RDS")
+saveRDS(rf_final_fit, file = "final_model.RDS")
 ```
+
+Comparing our models based on log loss (lower log loss is better), our best model of the two final models is the **random forest model**!
+
+
 
 
